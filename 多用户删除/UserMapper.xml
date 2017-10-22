@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.funding.manager.dao.UserDao">
+    <insert id="assignRole">
+        insert into t_user_role(userid, roleid) values
+        <foreach collection="roleids" item="roleid" separator=",">
+            (#{userid}, #{roleid})
+        </foreach>
+    </insert>
+    <delete id="revokeRole">
+       delete from t_user_role where userid = #{userid} and roleid in
+       <foreach collection="roleids" item="roleid" open="(" separator="," close=")">
+           #{roleid}
+       </foreach>
+    </delete>
+    <select id="getRoleIdsByUserId" resultType="int">
+        select roleid from t_user_role
+        where userid = #{userid}
+    </select>
+	<select id="getTotalCount" resultType="_int">
+		select count(*) from t_user
+		<where>
+			<if test="condLine != null">
+				and account like concat('%', #{condLine}, '%')
+			</if>
+		</where>
+	</select>
+	<select id="queryPageUsers" resultType="com.atguigu.funding.bean.User">
+		select id, account, password, username, email
+		from t_user
+		<where>
+			<if test="condLine != null">
+				and account like concat('%', #{condLine}, '%')
+			</if>
+		</where>
+		order by createtime desc
+		limit #{start}, #{size}
+	</select>
+
+	<select id="queryLoginUser" resultType="com.atguigu.funding.bean.User">
+		select id, account, password, username, email
+		from t_user
+		where account=#{account} and password=#{password}
+	</select>
+	<insert id="addUser">
+		insert into t_user(account, password, username, email, createtime)
+		values(#{account}, #{password}, #{username}, #{email}, #{createtime})
+	</insert>
+	<delete id="delUser">
+		delete from t_user where id=#{id}
+	</delete>
+	<select id="getUserById" resultType="com.atguigu.funding.bean.User">
+		select id, account, username, email, createtime
+		from t_user
+		where id=#{id}
+	</select>
+	<update id="updateUser">
+		update t_user set account=#{account}, username=#{username}, email=#{email}
+		where id=#{id}
+	</update>
+	<delete id="deleteUsers">
+		delete from t_user where id in
+		<foreach collection="ids" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+    <select id="getUserPermissions" resultType="com.atguigu.funding.bean.Permission">
+        SELECT distinct p.id, p.pid, p.icon, p.name, p.url, p.identifier
+        FROM t_permission p,t_role_permission rp,t_role r,t_user_role ur,t_user u
+		WHERE p.id=rp.permissionid
+		AND rp.roleid=r.id
+		AND r.id=ur.roleid
+		AND ur.userid=u.id
+		AND u.id=#{id}
+    </select>
+</mapper>
