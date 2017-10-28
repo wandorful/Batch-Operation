@@ -36,5 +36,10 @@ public class Datas {
     public void setCertImgs(List<CertImg> certImgs) {
         this.certImgs = certImgs;
     }
+	
+	public String toString() {
+		
+		return "";
+	}
 
 }
